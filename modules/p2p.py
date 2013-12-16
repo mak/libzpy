@@ -6,13 +6,17 @@ import struct
 import md5
 import zlib
 
+import json 
+
 from libs.storage import storageException 
 
 from libs.xstream import xstream
 from libs import fmt 
 from libs import cr_tools 
+from libs import binPCRE 
 
 from _local.tmp import zBinStorage
+
 
 
 #from parsers import *
@@ -23,8 +27,9 @@ from _local.tmp import zBinStorage
 STORAGE_HEADER_SIZE = 48 # 20 + 3*4 + 16
 ITEM_HEADER_SIZE = 16 # 4*4 
 
-FLG_ITEM_PACKED = 0x00000001
-
+FLG_ITEM_PACKED    = 0x00000001
+FLG_ITEM_WEBINJECT = 0x40000000
+FLG_ITEM_CONFIG    = 0x10000000 
 
 
 def decode():
@@ -73,7 +78,7 @@ def unpack(data,verb,checkMD5=False,calcMD5=True,showInfo=False):
 
   while  xs.availableLen() > ITEM_HEADER_SIZE :
     ih = xs.readFmt("=IIII",into=("recId","recFlag","recSize","realSize"))  
-    #print ih
+    verb(`ih`)
     key = 0xFFFFFFFF & (  ( 0x0000FFFF & ih['recId'] ) | ( ih['recSize'] << 0x10 ) | ( RET['head']['version'] << 8 ) )
     #print "KEY : %08X " % key
     binKey = struct.pack("=I",key)
@@ -104,10 +109,80 @@ def unpack(data,verb,checkMD5=False,calcMD5=True,showInfo=False):
 
 
 
+class format:
+  def __init__(self,data,verb,to='json'):
+    self.verb = verb
+    for item in data['items']:
+      item['data'],item['desc'] = self.processItem(item)
+    if to == 'json':
+      print json.dumps(data)      
 
 
+  def processItem(self,i):
+    F = i['recFlag']
+    N = i['recId'] 
+    if F & FLG_ITEM_WEBINJECT:
+      return self.fmtWebinject(i)
+    if F & FLG_ITEM_CONFIG:
+      fn = "config_rec_%d" % N
+      func = getattr(self,fn)
+      return func(i)
+    ## other 
+    return None
+
+  def fmtWebinject(self,i):
+    data = i['data']
+    xs = xstream(data)
+    PARTS = []
+    while xs.availableLen() > 4:
+      el = xs.readFmt("=IH",into=("size","flag"))
+      tmp = xs.readN( el['size'] - 6 )
+      if tmp[:4] == 'ERCP':
+        tmp = `binPCRE.readBinary(tmp)`
+      el['data'] = tmp
+      PARTS.append(tmp)
+    return PARTS,"webinject"
+
+  def config_rec_22003(self,i):
+    l = fmt.NullTermStringList(i['data'])
+    return l,"Webfilters"
+
+  def config_rec_22004(self,i):
+    l = fmt.NullTermStringList(i['data'])
+    return l,"list2"
+
+  def config_rec_22002(self,i):
+    t = self.rec_22002(i['data'])
+    return t,'webinject-table'
 
 
+  def rec_22002(self,data):
+    r = []
+    xs = xstream( data )
+    i=1
+    while xs.availableLen()>4:
+      wi = xs.readFmt("=IHH",into=("len","flag","id")) 
+      wi['len'] -= 4 + 2 + 2 
+      entry  = xstream( xs.readN(wi['len'])  )
+
+      params=''
+      for k in wi: params += ' %s=%04X|%d ' % (k,wi[k],wi[k])
+     
+      cond=[]
+      while entry.availableLen()>4:
+        cond = entry.readFmt("=III",into=("len","flag1","flag2"))
+        cond['len'] -= 4*3
+        cont = entry.readN( cond['len'] )
+        if cont[:4] == "ERCP":
+          cont = `binPCRE.readBinary(cont)`
+        params = ''
+        for k in cond: params += ' %s=%04X|%d ' % (k,cond[k],cond[k]) 
+        cond['text'] = cont
+   
+      wi['conditions'] = cond
+      r.append(wi)
+      i+=1
+    return r
 
 
 
@@ -163,6 +238,8 @@ class storage(zBinStorage):
     self.out( " </webfilters>\n" )
     return r
 
+
+
   def rec_22004(self,data):
     self.out( " <xlist>\n" )
     r = self.parseNullTermStringList(data)
@@ -209,7 +286,7 @@ class storage(zBinStorage):
       params=''
       for k in wi: params += ' %s=%04X|%d ' % (k,wi[k],wi[k])
       self.out( "  <inject no=%d %s >\n" % ( i,params) )
-      
+     
       cond=[]
       while entry.availableLen()>4:
         cond = entry.readFmt("=III",into=("len","flag1","flag2"))
