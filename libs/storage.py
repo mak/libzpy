@@ -1,0 +1,5 @@
+
+
+class storageException(Exception):
+  pass
+
