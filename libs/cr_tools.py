@@ -19,6 +19,12 @@ def xorWithKey(data,key):
 
 
 
+def visDecry(data):
+    i = len(data)-1
+    ret =map(ord,(datA))
+    for idx in range(len(data)-1,0,-1):
+        ret[idx] ^= ret[idx-1]
+    return ''.join(map(chr,ret))
 
 
 

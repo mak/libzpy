@@ -7,8 +7,10 @@ import sys
 import json 
 import pkgutil
 import re
+import logging
 
-
+logging.basicConfig(level=logging.INFO)
+LOG=logging.getLogger(__name__)
 PARSER_DIR = "modules"
 VERBOSE =False
 
@@ -122,24 +124,26 @@ for elem in args.actions:
     #print x
     CHAIN.append(x)
   except Exception, e:
-    die("Fail to process element [%s], reason : %s " % (elem,`e`))
-
+    LOG.exception("Fail to process element [%s], reason : %s " % (elem,`e`))
+    die("foo")
 verb("Work work ... ")
 
 try:
-  data = open(args.fin,'r').read(999999)
+  with open(args.fin,'r') as f: 
+
+    if args.skip:
+      verb("Skipping %d bytes ..." % args.skip )
+      f.read(args.skip)
+    data = f.read() 
+
   verb("Got [%d] bytes from file" % len(data))  
- 
-  if args.skip:
-    verb("Skipping %d bytes ..." % args.skip )
-    data = data[args.skip:]
-  
   for elem in CHAIN:
-    verb(`elem`)
-    data = elem['func'](data,verb,**elem['args']) 
+     
+      verb(`elem`)
+      data = elem['func'](data,verb,**elem['args']) 
 
 except Exception,e:
-  print "Error! python said : %s " % `e`
+  LOG.exception("Error! python said : %s " % `e`)
 
 
 
