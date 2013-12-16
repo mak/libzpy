@@ -54,3 +54,22 @@ class DataStructure(Structure):
 
     def __str__(self):
         return ' '.join(map(self._str_field,self._fields_))
+
+
+class StructList(object):
+    struct = None
+
+    def __init__(self,data):
+        self.data = data.data if isinstance(data,DataStructure) else data
+        self.size = data.realSize if isinstance(data,DataStructure) else len(data)
+        self.off = 0
+
+    def  __iter__(self):
+        return self
+
+    def next(self):
+        if self.off >= self.size:
+            raise StopIteration
+        ib = self.struct(self.data[self.off:])
+        self.off += ib.size
+        return ib

@@ -1,4 +1,4 @@
-from libs.structure import DataStructure
+from libs.structure import DataStructure,StructList
 from libs.structure import c_byte,c_word,c_dword,c_qword
 from libs.kdNRV2b import inflate as unrv2b
 
@@ -36,14 +36,13 @@ class Item(DataStructure):
         20006 :'CFGID_HTTP_POSTDATA_FILTER',
         20007 :'CFGID_HTTP_INJECTS_LIST',
         20008 :'CFGID_DNS_LIST',
-        20009 :'CFGID_CAPTCHA_SERVER',
-        20010 :'CFGID_CAPTCHA_LIST',
-        20011 :'CFGID_NOTIFY_SERVER',
-        20012 :'CFGID_NOTIFY_LIST',
-        20013 :'CFGID_REFRESH_BLOCK_LIST'
     }
 
     _fields_ = [ ('id',c_dword),('flags',c_dword),('size',c_dword),('realSize',c_dword)]
+
+    def __init__(self,*args,**kwargs):
+        super(Item,self).__init__(*args,**kwargs)
+        self._cfgids_n = self._cfgids.__class__(map(reversed, self._cfgids.items()))
 
     def _print_id(self):
         if self.id in self._cfgids:
@@ -58,7 +57,6 @@ class Item(DataStructure):
             self.decompress()
 
     def decompress(self):
-        print self.realSize
         self.data = unrv2b(self.data,self.realSize).run(1)
 
     def is_option(self):
@@ -70,6 +68,17 @@ class Item(DataStructure):
     def is_setting(self):
         return self.flags & self._flags['ITEMF_IS_SETTING'] 
 
+    def is_injectlist(self):
+        return self.id == self._cfgids_n['CFGID_HTTP_INJECTS_LIST']
+
+    def is_webfilter(self):
+        return self.id == self._cfgids_n['CFGID_HTTP_FILTER'] 
+   
+    def is_cfg_url(self):
+        return self.id == self._cfgids_n['CFGID_URL_SERVER_0']    
+
+    def is_acfg_url(self):
+        return self.id == self._cfgids_n['CFGID_URL_ADV_SERVERS']    
 
 _http_inj_Flags ={
         'FLAG_IS_FAKE'                  : 0x0001,
@@ -95,7 +104,20 @@ class HttpInject_InjectBlock(DataStructure):
     def _print_flags(self):
         return 'FLAGS %x' % self.flags
   
+class HttpInject_BList(StructList):
+    struct = HttpInject_InjectBlock
+
+
 class HttpInject_Header(DataStructure):
+    _pack_ = 1
     _fields_ = [('flags',c_word),('size',c_word),('urlMask',c_word),('fakeUrl',c_word),
-                ('postDataBlackMask',c_word),('postDataWhiteMask',c_word)]
+                ('postDataBlackMask',c_word),('postDataWhiteMask',c_word),
+                ('blockOnUrl',c_word),('contextMask',c_word)
+                ]
     _flags = _http_inj_Flags 
+    
+    def is_inject(self):
+        return self.flags & self._flags['FLAG_IS_INJECT']
+
+class HttpInject_HList(StructList):
+    struct = HttpInject_Header
