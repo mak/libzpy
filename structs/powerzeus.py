@@ -1,4 +1,4 @@
-from libs.structure import DataStructure
+from libs.structure import DataStructure,StructList
 from libs.structure import c_word
 import structs.zeus as zeus
 
@@ -17,17 +17,19 @@ class Item(zeus.Item):
         self._cfgids[20011] ='CFGID_NOTIFY_SERVER'
         self._cfgids[20012] ='CFGID_NOTIFY_LIST'
         self._cfgids[20013] ='CFGID_REFRESH_BLOCK_LIST'
+        self._cfgids_n = self._cfgids.__class__(map(reversed, self._cfgids.items()))
+
 
     def is_captchasrv(self):
-        return self.id == self.cfgid_n['CFGID_CAPTCHA_SERVER']
+        return self.id == self._cfgids_n['CFGID_CAPTCHA_SERVER']
 
     def is_captchalist(self):
-        return self.id == self.cfgid_n['CFGID_CAPTCHA_LIST']
+        return self.id == self._cfgids_n['CFGID_CAPTCHA_LIST']
     def is_notifysrv(self):
-        return self.id == self.cfgid_n['CFGID_NOTIFY_SERVER']
+        return self.id == self._cfgids_n['CFGID_NOTIFY_SERVER']
 
     def is_notifylist(self):
-        return self.id == self.cfgid_n['CFGID_NOTIFY_LIST']
+        return self.id == self._cfgids_n['CFGID_NOTIFY_LIST']
 
 _http_inj_flags = {
     'FLAG_IS_INJECT'                : 0x0001, 
@@ -53,6 +55,8 @@ class HttpInject_Header(DataStructure):
 
     def is_inject(self):
         return self.flags & self._flags['FLAG_IS_INJECT']
+    def is_capture(self):
+        return self.flags & self._flags['FLAG_IS_CAPTURE']
 
 class HttpInject_HList(zeus.HttpInject_HList):
     struct = HttpInject_Header
@@ -60,7 +64,5 @@ class HttpInject_HList(zeus.HttpInject_HList):
 class HttpInject_BList(zeus.HttpInject_BList):
     pass
 
-
-
-class HttpInject_CaptchaEntry(DataStructure):
+class HttpInject_Captcha(DataStructure):
     _fields_ = [('size',c_word),('urlHostMask',c_word),('urlCaptcha',c_word)]

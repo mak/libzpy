@@ -119,5 +119,8 @@ class HttpInject_Header(DataStructure):
     def is_inject(self):
         return self.flags & self._flags['FLAG_IS_INJECT']
 
+    def is_capture(self):
+        return self.flags & self._flags['FLAG_IS_CAPTURE']
+
 class HttpInject_HList(StructList):
     struct = HttpInject_Header
