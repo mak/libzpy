@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 import argparse
 import types
@@ -86,8 +86,9 @@ def processElement(elem):  ## format : pkg/class::method?args=val&arg2=val2
 
 P = argparse.ArgumentParser(description='== ZeuS-like BinStorage Parse ==')
 P.add_argument('--info'    , default=None,          help='Show info of sub-module', type=str )
-P.add_argument('--show'    , action='store_true',   help='List available sub-modules' )
+P.add_argument('--list'    , action='store_true',   help='List available sub-modules' )
 P.add_argument('--verbose' , action='store_true',   help='Be Verbose!' )
+#P.add_argument(
 
 P.add_argument('--fin'     , default=None  ,        help='Input file' , type=str )
 P.add_argument('--skip'    , default=0     ,        help='[only when --extract ] Skip N Bytes ',  type=int )
@@ -106,10 +107,10 @@ if args.info:
   ShowInfo(args.info)
   die()
 
-if args.show:
-  showAvailable()
-  die()
-
+# if args.show:
+#   showAvailable()
+#   die()
+# -
 if not args.fin :
   die("Need input file !")
 
@@ -129,8 +130,8 @@ for elem in args.actions:
 verb("Work work ... ")
 
 try:
-  with open(args.fin,'r') as f: 
-
+  with (sys.stdin if args.fin =='-' else open(args.fin,'r') ) as f: 
+    
     if args.skip:
       verb("Skipping %d bytes ..." % args.skip )
       f.read(args.skip)

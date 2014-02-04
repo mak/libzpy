@@ -53,11 +53,14 @@ class Item(DataStructure):
         super(Item,self).feed(data)
 
         if self.flags & self._flags['ITEMF_COMPRESSED'] and\
-           self.realSize != self.size:
-            self.decompress()
+           self.realSize != self.size:  self.decompress()
 
     def decompress(self):
         self.data = unrv2b(self.data,self.realSize).run(1)
+
+
+    def is_compresed(self):
+        return self.flags & self._flags['ITEMF_COMPRESSED'] 
 
     def is_option(self):
         return self.flags & self._flags['ITEMF_IS_OPTION'] 
@@ -67,6 +70,12 @@ class Item(DataStructure):
 
     def is_setting(self):
         return self.flags & self._flags['ITEMF_IS_SETTING'] 
+
+    def is_version(self):
+        return self.id == self._cfgids_n['CFGID_LAST_VERSION']
+
+    def is_update(self):
+        return self.id == self._cfgids_n['CFGID_LAST_VERSION_URL']                
 
     def is_injectlist(self):
         return self.id == self._cfgids_n['CFGID_HTTP_INJECTS_LIST']

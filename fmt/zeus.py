@@ -1,6 +1,7 @@
+from libs.rtb import check_url
 
 class fmt(object):
-
+    _name = 'ZeuS'
     def __init__(self,cfg):
         self.cfg = cfg
 
@@ -18,7 +19,7 @@ class fmt(object):
         return data
 
     def webfilters(self):
-        return "\n".join(map(self._butify_wf,self.cfg['webfilters']))
+        return "{{WEBFILTERS}}\n" + "\n".join(map(self._butify_wf,self.cfg['webfilters'])) + "\n{{END_WEBFILTERS}}\n\n"
 
     def _list(self,pre,name,post):
         if not name in self.cfg:
@@ -33,55 +34,68 @@ class fmt(object):
                 r += "\n"
         return r + post + "\n"
         
+    def version(self):
+        if 'version' in self.cfg:
+            return "\n\n" + self._name + ': ' +  self.cfg['version'] + "\n\n\n"
+        return ''
+
+    def server(self):    
+        return self._list("{{UPDATE_URLS}}",'update',"{{END_UPDATE_URLS}}")
+
 
     def server(self):    
         return self._list("{{SERVER_URLS}}",'server',"{{END_SERVER_URLS}}")
 
-    def adv_server(self):    
+    def adv_server(self): 
         return self._list("{{ADV_SERVER_URLS}}",'advance',"{{ADV_END_SERVER_URLS}}")
 
-    def injects(self):
-        r = '{{INJECTS}}'
-        for inject in self.cfg['injects']:
-            if 'injects' in inject:
-                r += '\nTarget: ' + inject['target'] 
-                r += '\nMeta:'  
-                r += "\n"
-                for inj in inject['injects']:
+    def inject_flags(self,inj):
+        pass
 
-                    r += "{{DATA_BEFORE}}\n"
+    def injects(self):
+        r = self._injects_fmt('injects')
+        return ('{{INJECTS}}' +r + "{{END_INJECTS}}\n") if r else ''
+
+    def captures(self):
+        r = self._injects_fmt('captures')
+        return ('{{CAPTURES}}' +r + "{{END_CAPTURES}}\n") if r else ''
+
+    def _injects_fmt(self,t):
+        r = '' #
+        for inject in self.cfg['injects']:
+            if t in inject:
+                r += '\nTarget: ' + inject['target'] 
+                r+= '\nHits: ' + check_url(inject['target'])
+                r += '\nFlags: ' + inject['flags']
+                r += '\nMeta: '
+                r += "\n"
+                for inj in inject[t]:
+
+                    r += "{{DATA_BEFORE}}"+ (" {{FLAGS: %X}}" % inj['pre_flag']) +"\n"
                     r += inj['pre'] + "\n"
                     r += "{{END_DATA_BEFORE}}\n"
-                    r += "{{DATA_AFTER}}\n"
+                    r += "{{DATA_AFTER}}" + (" {{FLAGS: %X}}" % inj['post_flag']) + "\n"
                     r += inj['post'] + "\n"
                     r += "{{END_DATA_AFTER}}\n"
-                    r += "{{INJECT}}\n"
+                    r += "{{INJECT}}"+ (" {{FLAGS: %X}}" % inj['inj_flag']) +"\n" 
                     r += inj['inj'] + "\n"
                     r += "{{END_INJECT}}\n\n"
                     r += '-'*32
                     r +="\n"
                 r += '#' * 32
                 r +="\n"
-        return r + "{{END_INJECTS}}\n"
+        return r 
 
-    def captures(self):
-        r= "{{CAPTURES}}\n"
-        for inject in self.cfg['injects']:
-            if 'captures' in inject:
-                r += 'Target: ' + inject['target']
-                r += 'Meta:'
-                for inj in inject['captures']:
-                    r += "{{DATA_BEFORE}}\n"
-                    r += inj['pre'] + "\n"
-                    r += "{{END_DATA_BEFORE}}"
-                    r += "{{DATA_AFTER}}\n"
-                    r += inj['post'] + "\n"
-                    r += "{{END_DATA_AFTER}}\n"
-                    r += "{{INJECT}}\n"
-                    r += inj['inj'] + "\n"
-                    r += "{{END_INJECT}}\n\n"
-                    r += '-'*32 
-                    r += "\n"
-                r += '#' * 32
-                r +="\n"
-        return r + "{{END_CAPTURES}}\n"        
+    def format(self):
+        r = ''
+        r += self.version()
+        r += self.server()
+        r += self.adv_server()
+        r += self.notify_srv()
+        r += self.notify_list()
+        r += self.captcha_srv()
+        r += self.captcha_list()
+        r += self.webfilters() 
+        r += self.injects()
+        r += self.captures()
+        return r
