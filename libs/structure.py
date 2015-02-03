@@ -9,10 +9,13 @@ c_word  = c_uint16
 c_dword = c_uint32
 c_qword = c_uint64
 
+## i need 32bit wchar...
+c_wchar = c_wchar if sizeof(c_wchar) == 2 else (2*c_char)
 
 class DataStructure(Structure):
     _flags = {} 
     _have_data = True
+    _sep = ' '
 
     def __init__(self,data):
         super(DataStructure,self).__init__()
@@ -27,6 +30,9 @@ class DataStructure(Structure):
     def feed(self, bytes):
         data = bytes
         if isinstance(data,StringIO):
+            #print bytes.tell()
+            #print self._fields_
+            #print sizeof(self)
             data  = bytes.read(sizeof(self))
 
         memmove(addressof(self), c_char_p(data), sizeof(self))
@@ -34,13 +40,21 @@ class DataStructure(Structure):
             self.read(bytes)
 
     def _str_field(self,args):
+        if type(args) == str:
+            args = (args,0)
         n,t = args
         if hasattr(self,'_print_%s' % n):
-            return getattr(self,'_print_%s' % n)()
+            return (n,getattr(self,'_print_%s' % n)())
         elif t == c_word:
-            return '%s: 0x%04x' % (n,getattr(self,n))
+            return (n,'0x%04x' % getattr(self,n))
         elif t == c_dword:
-            return '%s: 0x%08x' % (n,getattr(self,n))
+            return (n,'0x%08x' % getattr(self,n))
+        elif getattr(self,n).__class__ == str:
+            return (n,getattr(self,n).encode('string_escape'))
+
+    def _p_field(self,a):
+        return str(self._str_field(a))
+#        return #'%s: %s' % (a,self._str_field(a))
 
     def _print_flags(self):
         ret = []
@@ -48,13 +62,17 @@ class DataStructure(Structure):
             if self.flags & self._flags[fl]:
                 ret.append(fl)
         try:
-            return 'FLAGS: ' + ' | '.join(ret) + "\n"
+            return ' | '.join(ret)  + "\n"
         except:
-            return 'FLAGS: '
+            return ''
 
     def __str__(self):
-        return ' '.join(map(self._str_field,self._fields_))
+        return self._sep.join(map(self._p_field,self._fields_))
 
+    def json(self):
+         import json
+         return json.dumps(dict(map(self._str_field,self._fields_)))
+        
 
 class StructList(object):
     struct = None

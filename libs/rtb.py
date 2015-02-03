@@ -3,15 +3,75 @@
 import re,fnmatch
 
 data = { 
+ 'KB24 - KredytBank': [
+     'https://www.kb24.pl/MonitySterujacy',
+     'https://www.kb24.pl/Login',
+     'https://www.kb24.pl/ikd/DETAL/PL/_SCR/Logowanie.js'
+ ],
+ 'Bank Zagrzebski - grupa unicredit': [
+     'https://www.zaba.hr/ebank/gradjani/Gradjani',
+     'https://www.zaba.hr/ezaba/MainServlet',
+     'https://www.zaba.hr/ezaba/PlatniPromet',
+     'https://www.zaba.hr/ezaba/VA/StanjeIPrometiPregledPrometa',
+     'https://www.zaba.hr/ebank/gradjani/JavaScript/gLogin.js'
+ ],
+ 'mBank - company': [
+     'https://companynet.mbank.pl/mt/fragments/cua/login.jsp'
+ ],
+ 'Alpha Bank Romania': [
+     'https://secure2.alphabank.ro/corporate/CorpOTPLoginLangRom.jsp'
+ ],
  'Alior' : [
      'https://aliorbank.pl/hades/do/Login'
  ],
+ 'PBZCOM@NET' : [
+     'https://comnet.pbz.hr/PbzComnetWeb/stateAndTransactions/userAccountState.html',
+     'https://comnet.pbz.hr/PbzComnetWeb/kunaBusiness/ordersForSending.html'
+ ],
+ 'Pekao S.A. - Biznes ' : [
+     'https://ww.pekaobiznes24.pl/webcorpo/do/desktop',
+     'https://ww.pekaobiznes24.pl/webcorpo/do/operationHistory',
+     'https://www.pekaofirma24.pl/webcorpo/do/confidentialPhone?open=true',
+     'https://www.pekaofirma24.pl/sme/do/confidentialPhone?open=true',
+     'https://www.pekaofirma24.pl/sme/do/aggregation',
+     'https://www.pekaobiznes24.pl/sme/do/domesticTransfer?open=true'
+ ],
+ 'HYPO ALPE-ADRIA-BANK' : [
+     'https://www.hypo.hr/hyponet/Payments/PaymentSubmit?menu=loadPartial',
+     'https://www.hypo.hr/hyponet/Payments/PaymentViewSubmit?menu=loadPartial',
+     'https://www.hypo.hr/hyponet/Order10/IndexGridPartial'
+ ],
+ 'Citibank BG': [
+     'https://online.cibank.bg/EBankCI/',
+     'https://online.cibank.bg/EBankCI/Login',
+     'https://online.cibank.bg/EBankCI/Home',
+     'https://online.cibank.bg/EBankCI/StmtInFilesServlet'
+ ],
+
  'Pekao S.A.' : [
      'https://www.pekao24.pl',
      'https://www.prepaid.pekao24.pl',
      'https://www.cdm24.pl',
      'https://www.pekaofirma24.pl/do/login;jsessionid=',
      'https://www.pekaobiznes24.pl/do/login'
+ ],
+ 'BRD@ffice':[
+     'https://www.brdoffice.ro/smartoffice/index.html'
+ ],
+ 'Raiffeisen Bank, Zagreb' : [
+     'https://direkt.rba.hr/cgi-bin/ppz2/app/app_main.jsp',
+     'https://direkt.rba.hr/cgi-bin/ppz2/start/rbat.jsp'
+ ],
+ 'Erste&Steiermärkische Bank' : [
+     'https://netbanking.erstebank.hr',
+     'https://netbanking.erstebank.hr/Prijava/Prijava.aspx',
+     'https://netbanking.erstebank.rs/Prijava/Prijava.aspx',
+     'https://www.erstebank.rs/en/NetBanking/E-banking/Reta'
+ ],
+ 'BGŻ - corpo' : [
+     'https://www.pf.bgz.pl/bgzweb/auth/login/submit',
+     'https://www.pf.bgz.pl/bgzweb/auth/login/submit',
+     'https://www.ebgzfirma.pl'
  ],
  'BGK' : [
      'https://www.zleceniaplatnosci.bgk.pl/BGKSSO/Login.aspx?redirect',
@@ -80,7 +140,7 @@ data = {
      'https://plusbank24.pl/web-client/login!input.action'
  ],
  'BZ WBK' : [
-
+     'https://www.centrum24.pl/centrum24-web/?x=',
      'https://www.centrum24.pl/centrum24-web/login',
      'https://www.centrum24.pl/bzwbkonline/eSmart.html?typ=13&',
      'https://www.centrum24.pl/centrum24-web/login',

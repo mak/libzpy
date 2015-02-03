@@ -1,7 +1,7 @@
-from libs.rtb import check_url
 
 class fmt(object):
     _name = 'ZeuS'
+    _formats = ['version','server','adv_server','binary','webfilters','injects','captures']
     def __init__(self,cfg):
         self.cfg = cfg
 
@@ -19,35 +19,44 @@ class fmt(object):
         return data
 
     def webfilters(self):
-        return "{{WEBFILTERS}}\n" + "\n".join(map(self._butify_wf,self.cfg['webfilters'])) + "\n{{END_WEBFILTERS}}\n\n"
-
-    def _list(self,pre,name,post):
-        if not name in self.cfg:
+        if 'webfilters' in self.cfg:
+            return "{{WEBFILTERS}}\n" + "\n".join(map(self._butify_wf,self.cfg['webfilters'])) + "\n{{END_WEBFILTERS}}\n\n"
+        else:
             return ''
-        r =  pre + "\n"
-        for c in self.cfg[name]:
+
+    def _field(self,name,fname,formater=str):
+        if not fname in self.cfg:
+            return ''
+        return '{{%s}}\n%s\n{{END_%s}}\n'%(name,formater(self.cfg[fname]),name)
+
+    def _list(self,name,fname):
+        if not fname in self.cfg:
+            return ''
+        r =  '{{%s}}\n'%name
+        for c in self.cfg[fname]:
             if isinstance(c,str):
                 r +=  c + "\n"
             elif isinstance(c,dict):
                 for n in c:
                     r += n.upper() + ':' + c[n] + "  "
                 r += "\n"
-        return r + post + "\n"
+        return r + "{{END_%s}}\n"%name
         
     def version(self):
         if 'version' in self.cfg:
             return "\n\n" + self._name + ': ' +  self.cfg['version'] + "\n\n\n"
         return ''
 
-    def server(self):    
-        return self._list("{{UPDATE_URLS}}",'update',"{{END_UPDATE_URLS}}")
+    def binary(self):    
+        return self._list('UPDATE_URLS','update')
+    # def binary(self):    
+    #     return self._list("{{UPDATE_URLS}}",'update',"{{END_UPDATE_URLS}}")
 
-
     def server(self):    
-        return self._list("{{SERVER_URLS}}",'server',"{{END_SERVER_URLS}}")
+        return self._list('SERVER_URLS','server')
 
     def adv_server(self): 
-        return self._list("{{ADV_SERVER_URLS}}",'advance',"{{ADV_END_SERVER_URLS}}")
+        return self._list('ADV_SERVER_URLS','advance')
 
     def inject_flags(self,inj):
         pass
@@ -65,7 +74,6 @@ class fmt(object):
         for inject in self.cfg['injects']:
             if t in inject:
                 r += '\nTarget: ' + inject['target'] 
-                r+= '\nHits: ' + check_url(inject['target'])
                 r += '\nFlags: ' + inject['flags']
                 r += '\nMeta: '
                 r += "\n"
@@ -88,14 +96,7 @@ class fmt(object):
 
     def format(self):
         r = ''
-        r += self.version()
-        r += self.server()
-        r += self.adv_server()
-        r += self.notify_srv()
-        r += self.notify_list()
-        r += self.captcha_srv()
-        r += self.captcha_list()
-        r += self.webfilters() 
-        r += self.injects()
-        r += self.captures()
+        for fmt in self._formats:
+            r+=getattr(self,fmt)()
+
         return r
