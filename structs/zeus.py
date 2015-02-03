@@ -1,6 +1,6 @@
 from libs.structure import DataStructure,StructList
 from libs.structure import c_byte,c_word,c_dword,c_qword,c_wchar,c_char
-#from libs.kdNRV2b import inflate as unrv2b
+from libs.kdNRV2b import inflate as unrv2b
 from libs.UCL import UCL
 #from ctypes import bytearray
 
@@ -10,6 +10,7 @@ def decompress(data,size):
     if not _UCL:
         _UCL = UCL()
     return _UCL.decompress(data,size)
+
 
 class Header(DataStructure):
     _have_data = False
@@ -24,7 +25,7 @@ class Header(DataStructure):
 class PESettings(DataStructure):
     compId = None
     _have_data = False
-    _pack_ = 1
+    _pack_ =1
     _fields_ = [('size',c_dword),('_compId',c_wchar*60),('guid',c_char*0x10),('_RC4KEY',c_byte*0x102),
                 ('exeFile',c_char*20),('reportFile',c_char*20),('regKey',c_char*10),('regDynamicConfig',c_char*10),
                 ('regLocalConfig',c_char*10),('regLocalSettings',c_char*10),('processInfectionId',c_dword),('storageArrayKey',c_dword)
@@ -71,7 +72,6 @@ class Item(DataStructure):
     _fields_ = [ ('id',c_dword),('flags',c_dword),('size',c_dword),('realSize',c_dword)]
 
     def __init__(self,*args,**kwargs):
-        self._ucl = None
         super(Item,self).__init__(*args,**kwargs)
         self._cfgids_n = self._cfgids.__class__(map(reversed, self._cfgids.items()))
 
@@ -82,7 +82,8 @@ class Item(DataStructure):
 
     def feed(self,data):
         super(Item,self).feed(data)
-        #data.read(4)
+
+        ## apperently we ca have decompression without changed size...
         if self.flags & self._flags['ITEMF_COMPRESSED']:
            self.decompress()
 
@@ -120,6 +121,17 @@ class Item(DataStructure):
 
     def is_acfg_url(self):
         return self.id == self._cfgids_n['CFGID_URL_ADV_SERVERS']    
+
+    def is_dnslist(self):
+        return self.id == self._cfgids_n['CFGID_DNS_LIST']
+
+    def is_dnsfilter(self):
+        return self.id == self._cfgids_n['CFGID_DNS_FILTER']
+
+    def is_cmdlist(self):
+        return self.id == self._cfgids_n['CFGID_CMD_LIST']
+
+
 
 _http_inj_Flags ={
         'FLAG_IS_FAKE'                  : 0x0001,

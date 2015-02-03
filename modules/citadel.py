@@ -1,10 +1,10 @@
 import libs.cr_tools as cry
-import struct 
+
 import structs.citadel as zeus
 import fmt.citadel as cfmt
 from  . import template as t
 from libs.basecfg import BaseCfg
-
+from struct import unpack,pack
 from StringIO import StringIO
 from ctypes import sizeof
 from hashlib import md5
@@ -28,15 +28,15 @@ def unpack(data,verb):
 
 def parse(data,verb):
     data = t.parse(data,verb,zeus)
-    print `data`
+    #print `data`
     for id in range(20009,20021) + range(20101,20204):
         if id in data and id == 20009:
-            d = t.string_list(data[id])
+            d = t.string_list(data[id].data)
             data['dns_filter'] =d 
             del data[id]
 
         elif id in data and id == 20010:
-            d = t.string_list(data[id])
+            d = t.string_list(data[id].data)
             data['cmds'] =d 
             del data[id]
         elif id in data and id == 20011:
@@ -50,12 +50,12 @@ def parse(data,verb):
             pass
 
         elif id in data and id == 20015:
-            d = data[id].strip("\x00")
+            d = data[id].data.strip("\x00")
             data['keyloger'] = d
             del data[id]
 
         elif id in data and id == 20016:
-            d = struct.unpack('I',data[id])[0]
+            d = unpack('I',data[id].data)
             data['keyloger_time'] = d
             del data[id]
 
@@ -63,7 +63,7 @@ def parse(data,verb):
             pass
 
         elif id in data and id == 20018:
-            d = data[id].strip("\x00")
+            d = data[id].data.strip("\x00")
             data['webinj_url'] = d
             del data[id]
 
@@ -71,18 +71,17 @@ def parse(data,verb):
             pass
             
         elif id in data and id == 20020:
-            d = t.string_list(data[id])
-            data['httpvip'] = d
+            d = t.string_list(data[id].data)
+            d['httpvip'] = d
             del data[id]
 
         elif id in data and id == 20101:
-
-            d = struct.unpack('I',data[id])[0]
+            d = unpack('I',data[id].data)
             data['video_length'] = d
             del data[id]
 
         elif id in data and id == 20102:
-            d = struct.unpack('I',data[id])[0]
+            d = unpack('I',data[id].data)
             data['video_qual' ] =d
             del data[id]
 
@@ -96,7 +95,7 @@ def to_str(data,verb):
 
     fmt = cfmt.fmt(data)
     fmt._name = 'Citadel'
-    return fmt.format() + '\n\nUNKNOWN_DATA:\n\n' + '\n'.join(data.get('unknown',''))
+    return fmt.format() + '\n\nUNKNOWN_DATA:\n\n' + '\n'.join(data['unknown'])
 
 
 def json(data):
@@ -110,7 +109,7 @@ def json(data):
 def go(data,verb):
     data = unpack(data,verb)
     data = parse(data,verb)
-    print to_str(data,verb)
+
     return to_str(data,verb)
 
 
@@ -199,3 +198,4 @@ def parse_basecfg(basecfg,args):
 ## we allready decode basecfg
 def get_basecfg(d,*args):
     return d.decode('hex')
+    

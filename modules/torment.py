@@ -1,3 +1,4 @@
+import libs.cr_tools as cry
 import structs.zeus as zeus
 import fmt.zeus as zfmt
 from  . import template as t
@@ -44,13 +45,22 @@ def format(data,verb,type='pretty'):
 
 
 def parse_basecfg(basecfg,args):
+    data  = unpack(basecfg,lambda x: x,verify=False)
+    data =  parse(data,lambda x:x)
+    botname = data['unknown'][1].strip("\x00")
+    rc4key  = data['unknown'][3].strip("\x00")
+    urls    = data['unknown'][2].split('</>')[2:-1]
+    return {'botname': botname, 'rc4key':rc4key,'urls':urls,'cfg':urls[0]}
 
-    off = args['off']
-    bc = BaseCfg(basecfg)
-    bc.get_rc4(off)
-    return bc.get_basics()
-
+    
+    
 
 ## we allready decode basecfg
 def get_basecfg(d,*args):
-    return d.decode('hex')
+    # if not 'key' in args:
+    #     pass
+
+    k = args[0]
+    d = d.decode('hex')
+    return  cry.visDecry(cry.rc4decrypt(d,k,raw=True))
+

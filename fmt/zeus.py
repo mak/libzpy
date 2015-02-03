@@ -1,7 +1,7 @@
 
 class fmt(object):
     _name = 'ZeuS'
-    _formats = ['version','server','adv_server','binary','webfilters','injects','captures']
+    _formats = ['version','server','adv_server','webfilters','injects','captures']
     def __init__(self,cfg):
         self.cfg = cfg
 
@@ -24,10 +24,10 @@ class fmt(object):
         else:
             return ''
 
-    def _field(self,name,fname,formater=str):
+    def _field(self,name,fname):
         if not fname in self.cfg:
             return ''
-        return '{{%s}}\n%s\n{{END_%s}}\n'%(name,formater(self.cfg[fname]),name)
+        return '{{%s}}\n%s\n{{END_%s}}\n'%(name,str(self.cfg[fname]),name)
 
     def _list(self,name,fname):
         if not fname in self.cfg:

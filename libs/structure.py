@@ -30,9 +30,6 @@ class DataStructure(Structure):
     def feed(self, bytes):
         data = bytes
         if isinstance(data,StringIO):
-            #print bytes.tell()
-            #print self._fields_
-            #print sizeof(self)
             data  = bytes.read(sizeof(self))
 
         memmove(addressof(self), c_char_p(data), sizeof(self))
@@ -41,7 +38,7 @@ class DataStructure(Structure):
 
     def _str_field(self,args):
         if type(args) == str:
-            args = (args,0)
+            args = (args,0) 
         n,t = args
         if hasattr(self,'_print_%s' % n):
             return (n,getattr(self,'_print_%s' % n)())
@@ -53,8 +50,7 @@ class DataStructure(Structure):
             return (n,getattr(self,n).encode('string_escape'))
 
     def _p_field(self,a):
-        return str(self._str_field(a))
-#        return #'%s: %s' % (a,self._str_field(a))
+        return '%s: %s' % self._str_field(a)
 
     def _print_flags(self):
         ret = []
@@ -62,7 +58,7 @@ class DataStructure(Structure):
             if self.flags & self._flags[fl]:
                 ret.append(fl)
         try:
-            return ' | '.join(ret)  + "\n"
+            return ' | '.join(ret) + "\n"
         except:
             return ''
 

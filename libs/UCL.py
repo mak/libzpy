@@ -9,12 +9,15 @@ class UCL(object):
         if os.path.islink(MYSELF):
             MYSELF = os.readlink(MYSELF)
         DIR = os.path.dirname(MYSELF)
-        UCL = DIR + '/libucl.so'
+        if sizeof(c_long) == 8:
+            UCL = DIR + '/libucl_x64.so'
+        else:
+            UCL = DIR + '/libucl_i386.so'
         self._lib = cdll.LoadLibrary(UCL)
 
-    def decompress(self,data,out_size):
+    def decompress(self,data,size):
         compressed = c_buffer(data)
-        decompressed = c_buffer(out_size)
+        decompressed = c_buffer(size)
         decompressed_size = c_int()
         result = self._lib.ucl_nrv2b_decompress_le32(
             pointer(compressed),
