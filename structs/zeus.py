@@ -193,7 +193,7 @@ class WebFilter(object):
     def __getitem__(self,x):
         if x in self._wf:
             return self._wf[x]
-        raise KeyError()
+        raise x
 
     def json(self):
         return {'action':self[self.act],'target':self.trg}
