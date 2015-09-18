@@ -43,7 +43,7 @@ def parse(data,verb,mod=None):
             if not 'webfilters' in ret:
                 ret['webfilters'] = []
             for x in filter(None,itm.data.split("\x00")):
-                ret['webfilters'].append(x)
+                ret['webfilters'].append(mod.WebFilter(x).json())
 
         elif itm.is_injectlist():
             injList.append(itm)

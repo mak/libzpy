@@ -5,17 +5,17 @@ class fmt(object):
     def __init__(self,cfg):
         self.cfg = cfg
 
-    _wf_butify={
-        '@' : 'SCREENSHOT',
-        '!' : 'DONT-REPORT',
-        '-' : 'SAVE-COOCKIE',
-        '^' : 'BLOCK-ACCESS'
-    }
+    # _wf_butify={
+    #     '@' : 'SCREENSHOT',
+    #     '!' : 'DONT-REPORT',
+    #     '-' : 'SAVE-COOCKIE',
+    #     '^' : 'BLOCK-ACCESS'
+    # }
         
     def _butify_wf(self,d):
         data = d.strip()
         if data[0] in self._wf_butify:
-            return '{{' + self._wf_butify[data[0]] + '}} ' + data[1:]
+            return '{{' + data['action'] + '}} ' + data['target']
         return data
 
     def webfilters(self):
@@ -24,10 +24,10 @@ class fmt(object):
         else:
             return ''
 
-    def _field(self,name,fname):
+    def _field(self,name,fname,ppr=str):
         if not fname in self.cfg:
             return ''
-        return '{{%s}}\n%s\n{{END_%s}}\n'%(name,str(self.cfg[fname]),name)
+        return '{{%s}}\n%s\n{{END_%s}}\n'%(name,ppr(self.cfg[fname]),name)
 
     def _list(self,name,fname):
         if not fname in self.cfg:

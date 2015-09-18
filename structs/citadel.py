@@ -81,3 +81,9 @@ class HttpInject_BList(zeus.HttpInject_BList):
 
 class HttpInject_Captcha(DataStructure):
     _fields_ = [('size',c_word),('urlHostMask',c_word),('urlCaptcha',c_word)]
+
+
+class WebFilter(zeus.WebFilter):
+    def __init__(self,*args,**kwargs):
+        super(WebFilter,self).__init__(*args,**kwargs)
+        self._wf['#'] = 'MOVIE'

@@ -2,10 +2,6 @@ import  fmt.zeus as zeus
 from struct import unpack
 from datetime import datetime
 class fmt(zeus.fmt):
-            
-    def __init__(self,*args,**kwargs):
-        super(fmt,self).__init__(*args,**kwargs)
-        self._wf_butify['$'] = 'NOTIFY'
 
     def notify_srv(self):
         return self._list('{{NOTIFY_SERVERS}}','notify_srv')

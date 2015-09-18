@@ -5,7 +5,7 @@ class fmt(zeus.fmt):
             
     def __init__(self,*args,**kwargs):
         super(fmt,self).__init__(*args,**kwargs)
-        self._wf_butify['#'] = 'MOVIE'
+#        self._wf_butify['#'] = 'MOVIE'
         fmts  = self._formats[:4]
         fmts  += ['webinj_url','cmds','keyloger','video','httpvip','dns_filter']
         fmts  += self._formats[4:]

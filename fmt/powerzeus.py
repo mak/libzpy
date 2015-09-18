@@ -5,7 +5,6 @@ class fmt(zeus.fmt):
             
     def __init__(self,*args,**kwargs):
         super(fmt,self).__init__(*args,**kwargs)
-        self._wf_butify['$'] = 'NOTIFY'
         fmts  = self._formats[:4]
         fmts  += ['notify_srv','notify_list','captcha_srv','captcha_list']
         fmts  += self._formats[4:]

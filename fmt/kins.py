@@ -3,10 +3,10 @@ import  fmt.zeus as zeus
 
 class fmt(zeus.fmt):
             
-    def __init__(self,*args,**kwargs):
-        super(fmt,self).__init__(*args,**kwargs)
-        self._wf_butify['$'] = 'NOTIFY'
-        self._wf_butify['|'] = 'UNKNOWN' ## TODO....
+    # def __init__(self,*args,**kwargs):
+    #     super(fmt,self).__init__(*args,**kwargs)
+#        self._wf_butify['$'] = 'NOTIFY'
+#        self._wf_butify['|'] = 'UNKNOWN' ## TODO....
 
     def notify_srv(self):
         return self._list('{{NOTIFY_SERVERS}}','notify_srv','{{END_NOTIFY_SERVERS}}')

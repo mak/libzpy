@@ -177,3 +177,23 @@ class HttpInject_Header(DataStructure):
 
 class HttpInject_HList(StructList):
     struct = HttpInject_Header
+
+
+class WebFilter(object):
+    _wf = {
+        '@' : 'SCREENSHOT',
+        '!' : 'DONT-REPORT',
+        '-' : 'SAVE-COOCKIE',
+        '^' : 'BLOCK-ACCESS'
+    }
+    def __init__(self,d):
+        self.act = d[0]
+        self.trg = d[1:]
+    
+    def __getitem__(self,x):
+        if x in self._wf:
+            return self._wf[x]
+        raise KeyError()
+
+    def json(self):
+        return {'action':self[self.act],'target':self.trg}
