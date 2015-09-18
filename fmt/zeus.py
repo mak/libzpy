@@ -13,10 +13,9 @@ class fmt(object):
     # }
         
     def _butify_wf(self,d):
-        data = d.strip()
-        if data[0] in self._wf_butify:
-            return '{{' + data['action'] + '}} ' + data['target']
-        return data
+        if len(d['action']) > 3:
+            return '{{' + d['action'] + '}} ' + d['target'].strip()            
+        return '{{' + 'UNKNOWN-ACCTION('+d['action'] + ')}} ' + d['target'].strip()            
 
     def webfilters(self):
         if 'webfilters' in self.cfg:

@@ -189,11 +189,16 @@ class WebFilter(object):
     def __init__(self,d):
         self.act = d[0]
         self.trg = d[1:]
+        if 0x61 < ord(self.act) < 0x7a:
+            ## some strange shit...
+            self.trg = self.act + self.trg
+            self.act = ""
+
     
     def __getitem__(self,x):
         if x in self._wf:
             return self._wf[x]
-        raise x
+        return x
 
     def json(self):
         return {'action':self[self.act],'target':self.trg}
