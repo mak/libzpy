@@ -3,7 +3,7 @@ import fmt.zeus as zfmt
 from  . import template as t
 
 from StringIO import StringIO
-from ctypes import sizeof
+from ctypes import sizeof,cast,c_byte
 from libs.basecfg import BaseCfg
 import json
 
@@ -54,3 +54,34 @@ def parse_basecfg(basecfg,args):
 ## we allready decode basecfg
 def get_basecfg(d,*args):
     return d.decode('hex')
+
+def pack(data,verb,rand=True):
+    import hashlib
+    import struct as s
+    hdr = zeus.Header("\x00"*sizeof(zeus.Header))
+    items = []
+    for idx in data:
+        d = data[idx]['data']
+        if not isinstance(d,basestring):
+            d= s.pack('I',d)
+        itm = zeus.Item("\x00"*sizeof(zeus.Item))
+        itm.id = idx
+        itm.flags = data[idx]['flags']
+        itm.size = len(d)
+        itm.realSize = len(d)
+        items.append(itm.pack() + d)
+    
+    with open('/dev/urandom') as f: rnd=f.read(20)
+    cnt = ''.join(items)
+    hsh = hashlib.md5(cnt).digest()
+    hdr.count = len(data.keys())
+    if rand:
+        hdr.rand  = (c_byte*20)(*map(ord,rnd))
+        
+    hdr.flags = 0
+    hdr.size  = len(cnt) + sizeof(zeus.Header)
+    hdr.md5 =(c_byte*16)(*map(ord,hsh))
+#    ctypes.cast(f.fileName, ctypes._char_p)
+    return hdr.pack() + cnt
+    
+    

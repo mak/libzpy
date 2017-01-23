@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-
+import pprint
 import argparse
 import types
 import os
@@ -63,7 +63,11 @@ def processElement(elem):  ## format : pkg/class::method?args=val&arg2=val2
   mHandle = __import__(modName)
   mHandle = getattr(mHandle,vals['mod'])
 
-  if vals['func'].find("::") > -1 : # class + func
+  if vals['func'] in ['pp','print']:
+    parHandle = None
+    fnHandle = vals['func']
+  
+  elif vals['func'].find("::") > -1 : # class + func
     cls,fnc = vals['func'].split("::")
     clsHandle = getattr(mHandle,cls)
     parHandle = clsHandle()
@@ -141,7 +145,12 @@ try:
   for elem in CHAIN:
      
       verb(`elem`)
-      data = elem['func'](data,verb,**elem['args']) 
+      if elem['func'] == 'pp':
+        pprint.pprint(data)
+      elif elem['func'] == 'print':
+        print data
+      else:
+        data = elem['func'](data,verb,**elem['args']) 
 
 except Exception,e:
   LOG.exception("Error! python said : %s " % `e`)
