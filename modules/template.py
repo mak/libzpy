@@ -3,19 +3,14 @@ from ctypes import sizeof
 from hashlib import md5
 
 def unpack(data,verb,mod=None,verify=None):
-    hash=md5(data[:sizeof(mod.Header)]).digest()
-    data2=data
-    data=  StringIO(data)
-    stor =mod.Header(data)
+    hash = md5(data[:sizeof(mod.Header)]).digest()
+    data = StringIO(data)
+    stor = mod.Header(data)
     if verify:
-#        print str(bytearray(stor.md5)).encode('hex')
-#        print hash.encode('hex')
         if hash != str(bytearray(stor.md5)):
             print '[-] Hash mismath -- corrupted binstor?'
-#@            with open('/tmp/ffffap','wb') as f: f.write(data2)
             return None
-
-    ret= {}
+    ret = {}
     ret['header'] = stor
     ret['items'] = []
     for idx in xrange(stor.count):
@@ -49,14 +44,10 @@ def parse(data,verb,mod=None):
             injList.append(itm)
         elif itm.is_inject():
             injects.append(itm)
-
-#        elif itm.is_dnslist()
-
         elif itm.is_update():
             if not 'update' in ret:
                 ret['update'] = []
             ret['update'].append(itm.data)
-
         elif itm.is_version():
             pv =lambda x:'.'.join(['%.2X'% ord(c) for c in reversed(x)])
             ret['version'] =  pv(itm.data)
@@ -107,16 +98,17 @@ def parse(data,verb,mod=None):
     for il in injList:
         idx  = 0
         for ih in mod.HttpInject_HList(il.data):
-
             rr = {}
             rr['flags'] = ih._print_flags().strip()
             rr['flags_raw'] = ih.flags
             rr['meta']  = {} #{'flags': hex(ih.flags)}
             rr['target']=str(ih.data).strip().replace("\x00",'')
+
             if ih.is_inject():
                 t = 'injects'
             elif ih.is_capture(): t = 'captures'
             else: t='unknown'
+
             rr[t]= []
             idx2= 0 
             r = {}
