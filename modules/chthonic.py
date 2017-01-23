@@ -105,6 +105,6 @@ class ChthonicCfg(BaseCfg):
         del st['rc4sbox']
         return st
 
-def parse_basecfg(basecfg):
+def parse_basecfg(basecfg, _args):
    cfg  = ChthonicCfg(basecfg)
    return cfg.get_basics()
