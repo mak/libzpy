@@ -3,13 +3,14 @@ from ctypes import sizeof
 from hashlib import md5
 
 def unpack(data,verb,mod=None,verify=None):
-    hash=md5(data[:sizeof(mod.Header)]).digest()
     data2=data
     data=  StringIO(data)
     stor =mod.Header(data)
+    hash=md5(data.read(stor.size - sizeof(mod.Header))).digest()
+    data.seek(sizeof(mod.Header),0)
     if verify:
-#        print str(bytearray(stor.md5)).encode('hex')
-#        print hash.encode('hex')
+        # print str(bytearray(stor.md5)).encode('hex')
+        # print hash.encode('hex')
         if hash != str(bytearray(stor.md5)):
             print '[-] Hash mismath -- corrupted binstor?'
 #@            with open('/tmp/ffffap','wb') as f: f.write(data2)
@@ -104,10 +105,13 @@ def parse(data,verb,mod=None):
 #            ret['unknown'].append( str(itm) + "\n" + `itm.data`)
 
     ret['injects'] = []
+#    print len(injects)
     for il in injList:
         idx  = 0
         for ih in mod.HttpInject_HList(il.data):
-
+            if idx >= len(injects):
+                break
+#            print ih,idx
             rr = {}
             rr['flags'] = ih._print_flags().strip()
             rr['flags_raw'] = ih.flags

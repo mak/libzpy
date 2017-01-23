@@ -26,7 +26,10 @@ class DataStructure(Structure):
             self.data = data.read(self.size)
         else: 
             self.data = data[sizeof(self):self.size]
-    
+
+    def pack(self):
+        return buffer(self)[:]
+            
     def feed(self, bytes):
         data = bytes
         if isinstance(data,StringIO):
