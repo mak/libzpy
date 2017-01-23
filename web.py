@@ -129,6 +129,9 @@ def handle_basecfg():
       _data['aoff'] = data['aoff']
       del data['aoff']
 
+   if 'aes-key' in data:
+      _data['aes-key'] = data['aes-key']
+      del data['aoff']
 
       
    if key and basecfg and getattr(parser,'parse_basecfg',None):

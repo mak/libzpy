@@ -102,9 +102,14 @@ class ChthonicCfg(BaseCfg):
     def get_basics(self):
         st = super(ChthonicCfg, self).get_basics()
         st['user-agent'] = self.get_ua()
+        st['aes-key'] = self.aeskey
         del st['rc4sbox']
         return st
 
+    def set_aes(self, aeskey):
+        self.aeskey = aeskey
+
 def parse_basecfg(basecfg, _args):
    cfg  = ChthonicCfg(basecfg)
+   cfg.set_aes(_args['aes-key'])
    return cfg.get_basics()
