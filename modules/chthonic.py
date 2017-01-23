@@ -108,8 +108,3 @@ class ChthonicCfg(BaseCfg):
 def parse_basecfg(basecfg):
    cfg  = ChthonicCfg(basecfg)
    return cfg.get_basics()
-
-
-data = eval(open('/home/msm/Projects/Chthonic/1c4ae5ce73fe1b306064aa23160d8e0c/dumps/basecfg.cfg', 'rb').read())
-basecfg = get_basecfg(data, None)
-print parse_basecfg(basecfg)
