@@ -47,11 +47,11 @@ class PESettings(DataStructure):
 
 class Item(DataStructure):
     _flags = {
-        'ITEMF_COMPRESSED': 0x00000001,
-        'ITEMF_COMBINE_ADD':  0x00010000,
-        'ITEMF_COMBINE_OVERWRITE':0x00020000,
-        'ITEMF_COMBINE_REPLACE'  :0x00040000, 
-        'ITEMF_COMBINE_DELETE'   :0x00080000,
+        'ITEMF_COMPRESSED':        0x00000001,
+        'ITEMF_COMBINE_ADD':       0x00010000,
+        'ITEMF_COMBINE_OVERWRITE': 0x00020000,
+        'ITEMF_COMBINE_REPLACE'  : 0x00040000,
+        'ITEMF_COMBINE_DELETE'   : 0x00080000,
         'ITEMF_IS_OPTION'         :0x10000000,
         'ITEMF_IS_SETTING'        :0x20000000, 
         'ITEMF_IS_HTTP_INJECT'    :0x40000000
