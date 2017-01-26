@@ -3,7 +3,6 @@ from ctypes import sizeof
 from hashlib import md5
 
 def unpack(data,verb,mod=None,verify=None):
-    
     data = StringIO(data)
     stor = mod.Header(data)
     hash = md5(data.read(stor.size - sizeof(mod.Header))).digest()

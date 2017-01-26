@@ -61,7 +61,10 @@ class BaseCfg(object):
         st['rc4sbox']=self.rc4sbox.encode('hex')
         st['urls'] = self.get_urls()
         st['strings'] = self.get_strings()
-        st['cfg'] = st['urls'][0]
+        if st['urls']:
+            st['cfg'] = st['urls'][0]
+        else:
+            st['cfg'] = ''
         return st
     
 
