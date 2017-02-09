@@ -1,8 +1,8 @@
 from ctypes import *
 import os
-from mlib.compression.lznt1 import decompress_data
+from mlib.compression import lznt1 
 
 
 class UCL(object):
     def decompress(self,data,size):
-        return decompress_data(data)
+        return lznt1.decompress(data)
