@@ -18,7 +18,8 @@ class BaseCfg(object):
 
     def get_botname(self):
         _max = lambda x : max(x,key=len) if x else ''
-        return _max(filter(lambda x: x and not "\x00" in x,map(lambda x:x[0].decode('utf-16'),re.findall("((.\x00)+)\x00\x00",self.cfg))))
+        return _max(filter(lambda x: x and not "\x00" in x,map(lambda x:x[0].decode('utf-16').strip("\x00"),re.findall("((.\x00)+)\x00\x00",self.cfg))))
+
 
 
     def get_urls(self):
