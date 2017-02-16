@@ -1,6 +1,5 @@
 from libzpy.libs.structure import DataStructure,StructList
 from libzpy.libs.structure import c_byte,c_word,c_dword,c_qword,c_wchar,c_char
-from libzpy.libs.kdNRV2b import inflate as unrv2b
 from libzpy.libs.UCL import UCL
 #from ctypes import bytearray
 

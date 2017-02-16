@@ -3,7 +3,6 @@ from ctypes import *
 #    from cStringIO import StringIO
 #except ImportError:
 from StringIO import StringIO
-from libzpy.libs.kdNRV2b import inflate as unrv2b
 
 c_word  = c_uint16
 c_dword = c_uint32
