@@ -18,7 +18,7 @@ class BaseCfg(object):
 
     def get_botname(self):
         _max = lambda x : max(x,key=len) if x else ''
-        return _max(filter(lambda x: x and not "\x00" in x,map(lambda x:x[0].decode('utf-16').strip("\x00"),re.findall("((.\x00)+)\x00\x00",self.cfg))))
+        return _max(filter(lambda x: x and not "\x00" in x,map(lambda x:x[0].decode('utf-16').strip("\x00"),re.findall("(([\x1f-\x7e]\x00)+)\x00\x00",self.cfg))))
 
 
 
@@ -63,10 +63,12 @@ class BaseCfg(object):
         st['rc4sbox']=self.rc4sbox.encode('hex')
         st['urls'] = self.get_urls()
         st['strings'] = self.get_strings()
-        if st['urls']:
-            st['cfg'] = st['urls'][0]
-        else:
-            st['cfg'] = ''
+        if not st['botname']:
+            st['botname'] = '*default*'
+        # if st['urls']:
+        #     st['cfg'] = st['urls'][0]
+        # else:
+        #     st['cfg'] = ''
         return st
     
 
