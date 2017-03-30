@@ -103,7 +103,6 @@ def parse_basecfg(basecfg,data):
    bc.get_rc4(key)
    staticcfg = bc.get_basics()
    fakeurl = re.search('(http://[a-zA-Z0-9/.]*\x00)',bc.cfg).group(1)
-   print rc6k
    if rc6k:
        staticcfg['rc6sbox']= basecfg[rc6k:rc6k+0xb0].encode('hex')
    for u in filter(lambda x: x.endswith('.jpg'),bc.urls):
