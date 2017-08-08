@@ -13,6 +13,9 @@ import hashlib
 import struct
 import os
 import libzpy.structs.chthonic as zeus
+import ctypes
+
+import mlib.crypto as mc
 
 
 AES_BLOCK_SIZE = 16
@@ -26,20 +29,13 @@ def aes_pad(s):
 def aes_decrypt(data, key):
     aes = AES.new(key, AES.MODE_ECB)
     data = aes.decrypt(data)
-    return '\x00' + ''.join(chr(ord(x0) ^ ord(x1)) for x0, x1 in zip(data[1:], data[:-1]))
+    data = mc.visDecry(data)
+    return data
 
 def aes_encrypt(data, key):
-   
-    tmp = ""
-    z = 0
-    for i in [ord(x) for x in "\x00"+data]:
-        z ^= i
-        tmp += chr(z)
-    data = tmp
-
+    data = mc.visEncry(data)
     aes = AES.new(key, AES.MODE_ECB)
     data = aes.encrypt(aes_pad(data))
-
     return data
 
 def unpack(data, verb, key):
@@ -52,7 +48,7 @@ def unpack(data, verb, key):
     items = data["items"]
 
     for item in items:
-        
+        print(item.id, item.flags)
         if item.id == 12003 and not item.data.startswith("MZ"):
             nested = unpack(item.data, verb, key)
             result += nested["items"]
@@ -65,50 +61,39 @@ def unpack(data, verb, key):
         else:
             result.append(item)
     data['items'] = result
+
     return data
 
 def pack(data, aes_key, encrypt=True):
+
     chunks = ""
+    for i in data["chunks"]:
+        item = zeus.Item("")
+        item.id = i['type']
+        item.flags = i['flags']
+        item.realSize = len(i['payload'])
 
-    for c in data["chunks"]:
-        chunks += pack_chunk(c)
+        payload = i['payload']
 
-    packet_size = 48 + len(chunks)
-    flags = data["flags"]
-    chunks_no = len(data["chunks"])
+        if item.flags & 1:
+            payload = UCL().compress(payload)
 
-    packet = os.urandom(19)
-    packet += p32(packet_size)
-    packet += p32(flags)
-    packet += p32(chunks_no)
-    packet += hashlib.md5(chunks).digest()
-    packet += chunks
+        item.size = len(payload)
+        chunks += item.pack() + payload
 
-    packet = aes_encrypt(packet, aes_key)
+    header = zeus.Header("")
+    header.rand = (ctypes.c_byte * 20).from_buffer_copy(os.urandom(20))
+    header.size = 48 + len(chunks)
+    header.flags = data["flags"]
+    header.count = len(data["chunks"])
+    header.md5 = (ctypes.c_byte * 16).from_buffer_copy(hashlib.md5(chunks).digest())
+
+    packet = header.pack() + chunks
+
+    if encrypt:
+        packet = aes_encrypt(packet, aes_key)
 
     return packet
-
-def pack_chunk(data):
-
-    chunk_type = data["type"]
-    flags = data["flags"]
-    uncompressed_data = data["payload"]
-
-    if flags & 1:
-        compressed_data = UCL().compress(uncompressed_data)
-    else:
-        compressed_data = uncompressed_data
-
-    compressed_size = len(compressed_data)
-    uncompressed_size = len(uncompressed_data)
-
-    chunk  = p32(chunk_type)
-    chunk += p32(flags)
-    chunk += p32(compressed_size)
-    chunk += p32(uncompressed_size)
-    chunk += compressed_data
-
-    return chunk
 
 def parse(data, verb):
     return t.parse(data, verb, cht)
