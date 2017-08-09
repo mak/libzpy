@@ -50,7 +50,6 @@ def unpack(data, verb, key):
     for item in items:
         # print(item.id, hex(item.flags), len(item.data), item.data[:100])
         if item.id == 12003 and not item.data.startswith("MZ"):
-
             try:
                 nested = unpack(item.data, verb, key)
                 result += nested["items"]
@@ -58,7 +57,7 @@ def unpack(data, verb, key):
                 nested = unpack(item.data, verb, None)
                 result += nested["items"]
 
-        elif item.id == 12000 and not item.data.startswith("MZ"):
+        elif item.id == 12000 and item.flags & 0x10000000:
             nested = unpack(item.data, verb, None)
             result += nested["items"]
         elif item.id == 2541227442:
@@ -78,7 +77,12 @@ def pack(data, verb, aes_key):
     return packet
 
 def parse(data, verb):
-    return t.parse(data, verb, cht)
+    ret =  t.parse(data, verb, cht)
+
+    for i in data['items']:
+        if i.data.startswith("MZ"):
+            ret['PE'] = i.data
+    return ret
 
 
 def to_str(data, verb):
@@ -96,7 +100,15 @@ def format(data, verb, type='pretty'):
     elif type == 'json':
         return json.dumps(data)
 
-###
+def go(data, verb, aeskey):
+    if not data:
+        return ""
+    if len(data) % 16 != 0:
+        return ""
+
+    data = unpack(data, verb, aeskey)
+    data = parse(data, verb)
+    return data
 
 def get_basecfg(data,verb,*args):
     oldstdout = sys.stdout
