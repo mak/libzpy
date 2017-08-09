@@ -5,6 +5,8 @@ from libzpy.libs.basecfg import BaseCfg
 from libzpy.libs.vmzeus import VmContext as VM
 from libzpy.modules import template as t
 from mlib import memory
+from libzpy.modules import zeus as zeus
+import mlib.crypto as mc
 import json
 import re
 import sys
@@ -12,10 +14,8 @@ import StringIO
 import hashlib
 import struct
 import os
-import libzpy.structs.chthonic as zeus
+import libzpy.structs.chthonic as chtstruct
 import ctypes
-
-import mlib.crypto as mc
 
 
 AES_BLOCK_SIZE = 16
@@ -42,17 +42,23 @@ def unpack(data, verb, key):
     if key is not None:
         data = aes_decrypt(data, key)
 
-    data = t.unpack(data, verb, zeus)
+    data = t.unpack(data, verb, chtstruct)
 
     result = []
     items = data["items"]
 
     for item in items:
-        print(item.id, item.flags)
+        # print(item.id, hex(item.flags), len(item.data), item.data[:100])
         if item.id == 12003 and not item.data.startswith("MZ"):
-            nested = unpack(item.data, verb, key)
-            result += nested["items"]
-        elif item.id == 12000:
+
+            try:
+                nested = unpack(item.data, verb, key)
+                result += nested["items"]
+            except ValueError:
+                nested = unpack(item.data, verb, None)
+                result += nested["items"]
+
+        elif item.id == 12000 and not item.data.startswith("MZ"):
             nested = unpack(item.data, verb, None)
             result += nested["items"]
         elif item.id == 2541227442:
@@ -60,38 +66,14 @@ def unpack(data, verb, key):
             result += nested["items"]
         else:
             result.append(item)
+
     data['items'] = result
 
     return data
 
-def pack(data, aes_key, encrypt=True):
-
-    chunks = ""
-    for i in data["chunks"]:
-        item = zeus.Item("")
-        item.id = i['type']
-        item.flags = i['flags']
-        item.realSize = len(i['payload'])
-
-        payload = i['payload']
-
-        if item.flags & 1:
-            payload = UCL().compress(payload)
-
-        item.size = len(payload)
-        chunks += item.pack() + payload
-
-    header = zeus.Header("")
-    header.rand = (ctypes.c_byte * 20).from_buffer_copy(os.urandom(20))
-    header.size = 48 + len(chunks)
-    header.flags = data["flags"]
-    header.count = len(data["chunks"])
-    header.md5 = (ctypes.c_byte * 16).from_buffer_copy(hashlib.md5(chunks).digest())
-
-    packet = header.pack() + chunks
-
-    if encrypt:
-        packet = aes_encrypt(packet, aes_key)
+def pack(data, verb, aes_key):
+    packet = zeus.pack(data, verb)
+    packet = aes_encrypt(packet, aes_key)
 
     return packet
 
