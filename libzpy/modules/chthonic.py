@@ -4,38 +4,78 @@ import libzpy.fmt.zeus as zeusfmt
 from libzpy.libs.basecfg import BaseCfg
 from libzpy.libs.vmzeus import VmContext as VM
 from libzpy.modules import template as t
+from libzpy.modules import zeus as zeus
+import mlib.crypto as mc
 import json
 import re
 import sys
 import StringIO
 import hashlib
+import struct
+import os
+import libzpy.structs.chthonic as chtstruct
 
+AES_BLOCK_SIZE = 16
+
+def aes_pad(s):
+    return s + (AES_BLOCK_SIZE - len(s) % AES_BLOCK_SIZE) * chr(AES_BLOCK_SIZE - len(s) % AES_BLOCK_SIZE)
+
+def aes_decrypt(data, key):
+    aes = AES.new(key, AES.MODE_ECB)
+    data = aes.decrypt(data)
+    data = mc.visDecry(data)
+    return data
+
+def aes_encrypt(data, key):
+    data = mc.visEncry(data)
+    aes = AES.new(key, AES.MODE_ECB)
+    data = aes.encrypt(aes_pad(data))
+    return data
 
 def unpack(data, verb, key):
     if key is not None:
-        data = aesdecrypt(data, key)
-    data = t.unpack(data, verb, cht)
+        data = aes_decrypt(data, key)
+
+    data = t.unpack(data, verb, chtstruct)
 
     result = []
-    items = data['items']
+    items = data["items"]
+
     for item in items:
-        if item.id == 0x2ee3:
-            nested = unpack(item.data, verb, key)
-            result += nested['items']
-        elif item.id == 0x2ee0 and item.flags:
+        if item.id == item._cfgids['CFGID_OUTER_PAYLOAD'] and not item.data.startswith("MZ"):
+            try:
+                nested = unpack(item.data, verb, key)
+                result += nested["items"]
+            except ValueError:
+                nested = unpack(item.data, verb, None)
+                result += nested["items"]
+
+        elif item.id == item._cfgids['CFGID_PAYLOAD'] and item.flags & item._flags['ITEMF_IS_PACKED_CONFIG']:
             nested = unpack(item.data, verb, None)
-            result += nested['items']
-        elif item.id == 0x97780db2:
+            result += nested["items"]
+        elif item.id == item._cfgids['CFGID_INJECTS']:
             nested = unpack(item.data, verb, None)
-            result += nested['items']
+            result += nested["items"]
         else:
             result.append(item)
+
     data['items'] = result
+
     return data
 
+def pack(data, verb, aes_key):
+    packet = zeus.pack(data, verb)
+    packet = aes_encrypt(packet, aes_key)
+
+    return packet
 
 def parse(data, verb):
-    return t.parse(data, verb, cht)
+    ret =  t.parse(data, verb, cht)
+
+    for i in data['items']:
+        if i.data.startswith("MZ"):
+            ret['PE'] = i.data
+    return ret
 
 
 def to_str(data, verb):
@@ -47,24 +87,21 @@ def to_str(data, verb):
     fmt._ = 'Cthonic'
     return fmt.format()
 
-def aesdecrypt(data, key):
-    aes = AES.new(key, AES.MODE_ECB)
-    data = aes.decrypt(data)
-    return '\x00' + ''.join(chr(ord(x0) ^ ord(x1)) for x0, x1 in zip(data[1:], data[:-1]))
-
-def go(data, verb, aeskey):
-    aeskey = aeskey.decode('hex')
-
-    data = unpack(data, verb, aeskey)
-    data = parse(data, verb)
-    print to_str(data, verb)
-
-
 def format(data, verb, type='pretty'):
     if type == 'pretty':
         return to_str(data, verb)
     elif type == 'json':
         return json.dumps(data)
+
+def go(data, verb, aeskey):
+    if not data:
+        return ""
+    if len(data) % 16 != 0:
+        return ""
+
+    data = unpack(data, verb, aeskey)
+    data = parse(data, verb)
+    return data
 
 def get_basecfg(data,verb,*args):
     oldstdout = sys.stdout
@@ -88,7 +125,6 @@ def get_basecfg(data,verb,*args):
         print 'Data hash: ' + hashlib.md5(data['data'].decode('hex')).hexdigest()
         print 'Xors: ' + str(data['magic'])
     return cfg
-
 
 class ChthonicCfg(BaseCfg):
     def __init__(self, cfg):
