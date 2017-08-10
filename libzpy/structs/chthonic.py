@@ -10,6 +10,11 @@ class Item(zeus.Item):
     def __init__(self,*args,**kwargs):
         super(Item,self).__init__(*args,**kwargs)
 
+        self._cfgids['CFGID_OUTER_PAYLOAD']      =  12003
+        self._cfgids['CFGID_INJECTS']            =  2541227442
+        self._cfgids['CFGID_PAYLOAD']            =  12000
+        self._flags['ITEMF_IS_PACKED_CONFIG']    =  0x10000000
+
 
 class HttpInject_HList(zeus.HttpInject_HList):
     struct = zeus.HttpInject_Header

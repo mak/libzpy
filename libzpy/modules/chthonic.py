@@ -4,7 +4,6 @@ import libzpy.fmt.zeus as zeusfmt
 from libzpy.libs.basecfg import BaseCfg
 from libzpy.libs.vmzeus import VmContext as VM
 from libzpy.modules import template as t
-from mlib import memory
 from libzpy.modules import zeus as zeus
 import mlib.crypto as mc
 import json
@@ -15,13 +14,8 @@ import hashlib
 import struct
 import os
 import libzpy.structs.chthonic as chtstruct
-import ctypes
-
 
 AES_BLOCK_SIZE = 16
-
-def p32(s):
-    return struct.pack('<I', s)
 
 def aes_pad(s):
     return s + (AES_BLOCK_SIZE - len(s) % AES_BLOCK_SIZE) * chr(AES_BLOCK_SIZE - len(s) % AES_BLOCK_SIZE)
@@ -48,8 +42,7 @@ def unpack(data, verb, key):
     items = data["items"]
 
     for item in items:
-        # print(item.id, hex(item.flags), len(item.data), item.data[:100])
-        if item.id == 12003 and not item.data.startswith("MZ"):
+        if item.id == item._cfgids['CFGID_OUTER_PAYLOAD'] and not item.data.startswith("MZ"):
             try:
                 nested = unpack(item.data, verb, key)
                 result += nested["items"]
@@ -57,10 +50,10 @@ def unpack(data, verb, key):
                 nested = unpack(item.data, verb, None)
                 result += nested["items"]
 
-        elif item.id == 12000 and item.flags & 0x10000000:
+        elif item.id == item._cfgids['CFGID_PAYLOAD'] and item.flags & item._flags['ITEMF_IS_PACKED_CONFIG']:
             nested = unpack(item.data, verb, None)
             result += nested["items"]
-        elif item.id == 2541227442:
+        elif item.id == item._cfgids['CFGID_INJECTS']:
             nested = unpack(item.data, verb, None)
             result += nested["items"]
         else:
