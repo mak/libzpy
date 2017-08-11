@@ -132,5 +132,7 @@ def parse(data,verb,mod=None):
                 idx2+=1
             idx += 1
             ret['injects'].append(rr)
+            if len(injects) <= idx:
+                break
     return ret
        
