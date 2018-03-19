@@ -51,7 +51,7 @@ class VMZCfg(BaseCfg):
         for k in ks:
             try:
                 temp = self._get_enc_urls(k)
-                if temp and temp != ([],[]) and any(map(lambda u: u.startswith('http'),temp[0])):
+                if temp and temp != ([],[]) and any(map(lambda u: u.find('http')!=-1,temp[0])):
                     r = k
             except Exception as e:
                 # import traceback
